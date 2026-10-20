@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="zh-Hant">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>AI 照片 Prompt · AI Photo Prompts</title>
+<title>AI Photo Prompts · AI 照片 Prompt</title>
 <style>
   :root { --navy: #14213D; --cream: #FBF8F3; --muted: #4A5568; --gold: #F6C453; --orange: #E07A2E; --teal: #2BA394; }
   * { box-sizing: border-box; }
@@ -26,9 +26,9 @@
 </head>
 <body>
 <header>
-  <h1 id="h">AI 照片 Prompt</h1>
-  <p id="sub">按「複製」，打開 Gemini / ChatGPT / Grok，上傳你自己的照片，貼上送出。</p>
-  <div class="lang"><button id="zh" class="on" type="button">中文</button><button id="en" type="button">English</button></div>
+  <h1 id="h">AI Photo Prompts</h1>
+  <p id="sub">Tap “Copy”, open Gemini / ChatGPT / Grok, upload your own photo, paste and send.</p>
+  <div class="lang"><button id="en" class="on" type="button">English</button><button id="zh" type="button">中文</button></div>
 </header>
 <main id="list"></main>
 <p class="steps" id="steps"></p>
@@ -56,7 +56,8 @@
     },
   };
   const q = new URLSearchParams(location.search);
-  let lang = q.get('lang') === 'en' ? 'en' : 'zh';
+  // English by default (the audience is Malay and Indian colleagues); ?lang=zh for Chinese.
+  let lang = q.get('lang') === 'zh' ? 'zh' : 'en';
   const pick = location.hash.slice(1);
 
   function copyText(t) {
