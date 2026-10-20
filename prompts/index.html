@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI 照片 Prompt · AI Photo Prompts</title>
+<style>
+  :root { --navy: #14213D; --cream: #FBF8F3; --muted: #4A5568; --gold: #F6C453; --orange: #E07A2E; --teal: #2BA394; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--cream); color: var(--navy); font-family: -apple-system, BlinkMacSystemFont, "PingFang TC", "Noto Sans TC", "Segoe UI", Arial, sans-serif; }
+  header { background: var(--navy); color: var(--cream); padding: 28px 20px 24px; }
+  header h1 { margin: 0 0 6px; font-size: 24px; }
+  header p { margin: 0; font-size: 15px; color: #D5DBE6; line-height: 1.5; }
+  .lang { display: flex; gap: 8px; margin-top: 14px; }
+  .lang button { border: 1.5px solid var(--gold); background: transparent; color: var(--gold); border-radius: 999px; padding: 6px 16px; font-size: 15px; font-weight: 700; }
+  .lang button.on { background: var(--gold); color: var(--navy); }
+  main { padding: 16px; max-width: 640px; margin: 0 auto; }
+  .card { background: #fff; border-radius: 18px; padding: 18px; margin-bottom: 16px; box-shadow: 0 2px 10px rgba(20,33,61,.08); scroll-margin-top: 12px; }
+  .tag { display: inline-block; font-weight: 800; font-size: 15px; padding: 4px 14px; border-radius: 999px; color: var(--navy); }
+  .text { font-size: 17px; line-height: 1.6; margin: 12px 0 14px; white-space: pre-wrap; user-select: all; -webkit-user-select: all; }
+  .copy { width: 100%; border: 0; border-radius: 12px; padding: 14px; font-size: 17px; font-weight: 800; background: var(--navy); color: var(--cream); }
+  .copy.done { background: var(--teal); color: var(--navy); }
+  .steps { font-size: 15px; color: var(--muted); line-height: 1.7; padding: 0 4px 24px; }
+  .card.hl { outline: 3px solid var(--orange); }
+</style>
+</head>
+<body>
+<header>
+  <h1 id="h">AI 照片 Prompt</h1>
+  <p id="sub">按「複製」，打開 Gemini / ChatGPT / Grok，上傳你自己的照片，貼上送出。</p>
+  <div class="lang"><button id="zh" class="on" type="button">中文</button><button id="en" type="button">English</button></div>
+</header>
+<main id="list"></main>
+<p class="steps" id="steps"></p>
+<script>
+  const P = {
+    zh: {
+      h: 'AI 照片 Prompt', sub: '按「複製」，打開 Gemini / ChatGPT / Grok，上傳你自己的照片，貼上送出。',
+      copy: '複製', done: '已複製 ✓',
+      steps: '小提醒：只用你自己的照片，不上傳病人的照片。生成出來不像你？再說一句「臉保持跟原圖一樣」。',
+      items: [
+        ['cute', '可愛風', '#F6C453', '把這張照片裡的人變成可愛的 3D 卡通公仔風格：大眼睛、圓圓的臉，保留髮型和衣服顏色，粉嫩色背景。'],
+        ['studio', '專業 Studio 照', '#E07A2E', '把這張照片變成專業形象照：五官保持不變，換上深色西裝外套，攝影棚柔光，淺灰色純色背景，胸部以上，高清寫實。'],
+        ['park', '公園運動照', '#2BA394', '保留這個人的樣子，生成他在綠意盎然的公園裡慢跑的照片：早晨陽光、穿運動服、自然微笑，像手機拍的寫實照片。'],
+      ],
+    },
+    en: {
+      h: 'AI Photo Prompts', sub: 'Tap “Copy”, open Gemini / ChatGPT / Grok, upload your own photo, paste and send.',
+      copy: 'Copy', done: 'Copied ✓',
+      steps: 'Tip: only use your own photo — never a patient’s. Doesn’t look like you? Add “keep the face exactly like the original”.',
+      items: [
+        ['cute', 'Cute style', '#F6C453', 'Turn the person in this photo into a cute 3D cartoon figurine: big eyes, a round face, keep the hairstyle and clothing colours, soft pastel background.'],
+        ['studio', 'Studio headshot', '#E07A2E', 'Turn this photo into a professional headshot: keep my face and features exactly the same, dark blazer, soft studio lighting, plain light-grey background, chest-up, high-resolution and realistic.'],
+        ['park', 'Jogging in the park', '#2BA394', 'Keep this person looking the same and show them jogging in a lush green park: morning sunlight, sportswear, a natural smile, realistic like a phone photo.'],
+      ],
+    },
+  };
+  const q = new URLSearchParams(location.search);
+  let lang = q.get('lang') === 'en' ? 'en' : 'zh';
+  const pick = location.hash.slice(1);
+
+  function copyText(t) {
+    if (navigator.clipboard && window.isSecureContext) return navigator.clipboard.writeText(t);
+    const a = document.createElement('textarea');
+    a.value = t; a.setAttribute('readonly', ''); a.style.position = 'fixed'; a.style.opacity = '0';
+    document.body.appendChild(a); a.select(); a.setSelectionRange(0, t.length);
+    try { document.execCommand('copy'); } finally { a.remove(); }
+    return Promise.resolve();
+  }
+
+  function render() {
+    const L = P[lang];
+    document.documentElement.lang = lang === 'en' ? 'en' : 'zh-Hant';
+    document.getElementById('h').textContent = L.h;
+    document.getElementById('sub').textContent = L.sub;
+    document.getElementById('steps').textContent = L.steps;
+    document.getElementById('zh').className = lang === 'zh' ? 'on' : '';
+    document.getElementById('en').className = lang === 'en' ? 'on' : '';
+    const list = document.getElementById('list');
+    list.textContent = '';
+    for (const [id, tag, color, text] of L.items) {
+      const card = document.createElement('section');
+      card.className = 'card' + (id === pick ? ' hl' : '');
+      card.id = id;
+      const t = document.createElement('span'); t.className = 'tag'; t.style.background = color; t.textContent = tag;
+      const p = document.createElement('p'); p.className = 'text'; p.textContent = text;
+      const b = document.createElement('button'); b.className = 'copy'; b.type = 'button'; b.textContent = L.copy;
+      b.onclick = () => copyText(text).then(() => {
+        b.textContent = L.done; b.classList.add('done');
+        setTimeout(() => { b.textContent = L.copy; b.classList.remove('done'); }, 2000);
+      });
+      card.append(t, p, b);
+      list.append(card);
+    }
+    if (pick) document.getElementById(pick)?.scrollIntoView({ block: 'start' });
+  }
+  document.getElementById('zh').onclick = () => { lang = 'zh'; render(); };
+  document.getElementById('en').onclick = () => { lang = 'en'; render(); };
+  render();
+</script>
+</body>
+</html>
